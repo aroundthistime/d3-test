@@ -36,10 +36,14 @@ const SimpleBarGraph = () => {
             .domain([0, range.max])
             .range([0, 400])
 
-        d3.select(containerRef.current)
-            .style('background-color', 'white')
-            .style('padding', '20px')
-            .selectAll(null)
+        const container = d3.select(containerRef.current)
+        .style('background-color', 'white')
+        .style('padding', '20px')
+
+        container.selectAll('*')
+            .remove()
+
+        container.selectAll(null)
             .data(data)
             .join('div')
             .attr("id", (d) => `bar-${d}`)
