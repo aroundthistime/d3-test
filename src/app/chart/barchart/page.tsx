@@ -2,14 +2,9 @@
 
 import React, { useEffect, useRef } from 'react'
 import * as d3 from 'd3'
-import { useSearchParams } from 'next/navigation'
 
 const SimpleBarGraph = () => {
   const containerRef = useRef<HTMLDivElement>(null!)
-  const searchParams = useSearchParams()
-
-  const minParam = searchParams.get('min')
-  const maxParam = searchParams.get('max')
 
   const drawBarGraph = (data: Readonly<PeopleData[]>) => {
     const STYLE = {
@@ -26,6 +21,13 @@ const SimpleBarGraph = () => {
           horizontal: 0.5,
           vertical: 0.5
         }
+      },
+      bar: {
+        color: {
+          default: 'orange',
+          highlight: 'red'
+        },
+        transition: 200
       }
     } as const
 
@@ -76,7 +78,19 @@ const SimpleBarGraph = () => {
       .attr('width', xAxisScale.bandwidth())
       .attr('x', d => xAxisScale(d.name)!)
       .attr('y', d => yAxisScale(d.age))
-      .attr('fill', 'orange')
+      .attr('fill', STYLE.bar.color.default)
+      .on('mouseenter', function (event: MouseEvent) {
+        d3.select(this)
+          .transition()
+          .duration(STYLE.bar.transition)
+          .attr('fill', STYLE.bar.color.highlight)
+      })
+      .on('mouseleave', function (event: MouseEvent) {
+        d3.select(this)
+          .transition()
+          .duration(STYLE.bar.transition)
+          .attr('fill', STYLE.bar.color.default)
+      })
   }
 
   useEffect(() => {
@@ -104,10 +118,10 @@ const SimpleBarGraph = () => {
     ] as const satisfies Readonly<PeopleData[]>
 
     drawBarGraph(data)
-  }, [minParam, maxParam])
+  }, [])
 
   return (
-        <div ref={containerRef} className="bg-zinc-500 px-10 py-5"/>
+    <div ref={containerRef} className="bg-zinc-500 px-10 py-5"/>
   )
 }
 
