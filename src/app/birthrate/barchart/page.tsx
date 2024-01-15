@@ -111,7 +111,6 @@ const BirthRateBarChart = () => {
             className='px-3 py-2 rounded-sm bg-zinc-800 fixed text-xs'
         />
     </div>
-
   )
 }
 
