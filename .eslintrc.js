@@ -32,6 +32,10 @@ module.exports = {
       'react/function-component-definition': 0,
       '@typescript-eslint/explicit-function-return-type': 0,
       '@typescript-eslint/no-non-null-assertion': 0,
-      '@typescript-eslint/no-use-before-define': 0
+      '@typescript-eslint/no-use-before-define': 0,
+      'no-case-declarations': 0,
+      'react/react-in-jsx-scope': 0,
+      '@typescript-eslint/strict-boolean-expressions': 0,
+      '@typescript-eslint/no-floating-promises': 0
     }
 }
