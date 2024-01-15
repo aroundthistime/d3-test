@@ -3,8 +3,12 @@
 import { useEffect, useRef } from 'react'
 import * as d3 from 'd3'
 import { ceilWithBiggestDigit } from '@/utils/math'
+import { useBirthRateQuery } from '@/queries/birthrate/useBirthRateQuery'
+import { type BirthRateData } from '@/queries/birthrate/types'
 
 const BirthRateBarChart = () => {
+  const { data } = useBirthRateQuery()
+
   const containerRef = useRef<SVGSVGElement>(null!)
   const tooltipRef = useRef<HTMLDivElement>(null!)
 
@@ -21,19 +25,12 @@ const BirthRateBarChart = () => {
     }
   } as const
 
-  const getBirthRateData = async () => {
-    const data = await d3.json('/singapore_birthrate.json')
-    if (!data) return
-
-    drawChart(data as BirthRateDTO)
-  }
-
-  const drawChart = (data: BirthRateDTO) => {
+  const drawChart = (data: BirthRateData) => {
     const container = d3.select(containerRef.current)
     container.selectAll('*').remove()
 
     const xAxisScale = d3.scaleUtc()
-      .domain(d3.extent(data, d => new Date(d.Key)) as [Date, Date])
+      .domain(d3.extent(data, d => d.year) as [Date, Date])
       .range([STYLE.margin.left, STYLE.size.width - STYLE.margin.right])
 
     container.append('g')
@@ -41,7 +38,7 @@ const BirthRateBarChart = () => {
       .attr('transform', `translate(0, ${STYLE.size.height - STYLE.margin.bottom})`)
       .attr('color', 'black')
 
-    const maxBirthRate = Math.max(...data.map(data => parseInt(data.Value)))
+    const maxBirthRate = Math.max(...data.map(d => d.birth))
 
     const yAxisSCale = d3.scaleLinear()
       .domain([0, ceilWithBiggestDigit(maxBirthRate)])
@@ -62,13 +59,13 @@ const BirthRateBarChart = () => {
       .data(data)
       .join('rect')
       .attr('width', (STYLE.size.width - STYLE.margin.left - STYLE.margin.right) / data.length)
-      .attr('height', d => STYLE.size.height - STYLE.margin.top - yAxisSCale(parseInt(d.Value)))
-      .attr('x', d => xAxisScale(new Date(d.Key)))
-      .attr('y', d => yAxisSCale(parseInt(d.Value)))
+      .attr('height', d => STYLE.size.height - STYLE.margin.top - yAxisSCale(d.birth))
+      .attr('x', d => xAxisScale(d.year))
+      .attr('y', d => yAxisSCale(d.birth))
       .attr('fill', 'gray')
 
     bars.on('mouseenter', function (_, d) {
-      tooltipRef.current.innerText = `${d.Key}: ${d.Value}`
+      tooltipRef.current.innerText = `${d.year.getFullYear()}: ${d.birth}`
       tooltipRef.current.style.display = 'block'
 
       bars.attr('fill', 'lightgray')
@@ -92,8 +89,10 @@ const BirthRateBarChart = () => {
   }
 
   useEffect(() => {
-    getBirthRateData()
-  }, [])
+    if (data) {
+      drawChart(data)
+    }
+  }, [data])
 
   return (
     <div>
@@ -115,17 +114,5 @@ const BirthRateBarChart = () => {
 
   )
 }
-
-type BirthRateDTO = Array<{
-  /**
-     * Year
-     */
-  Key: string
-
-  /**
-     * Number of births in that year
-     */
-  Value: string
-}>
 
 export default BirthRateBarChart
